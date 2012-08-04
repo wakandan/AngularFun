@@ -4,6 +4,7 @@ require
 	map:
 		'*':
 			'libs/angularResource': 'libs/angular-resource'
+			'libs/socket.io': '../socket.io/socket.io.js'
 	shim:
 		'libs/angular':
 			deps: ['libs/modernizr']
@@ -11,6 +12,8 @@ require
 		'libs/angular-resource': ['libs/angular']
 		'libs/modernizr':
 			exports: 'Modernizr'
+		'../socket.io/socket.io.js':
+			exports: 'io'
 	[
 		'app'
 		'bootstrap'

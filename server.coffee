@@ -16,17 +16,13 @@
 	isUniqueName = (name) ->
 		(name for person in people when person.name is name).length is 0
 
-	open = (command = 'open') ->
-		url = getUrl()
-		ostype = require('os').type()
-		command = 'explorer' if ostype is 'Windows_NT'
-		spawn = require('child_process').spawn
 
-		console.log "launching #{url}"
 
-		spawn command, [url]
-
-	app = express.createServer()
+	app = express()
+	http = require 'http'
+	server = http.createServer app
+	io = require('socket.io').listen server
+	server.listen port
 
 	app.configure ->
 		app.set 'view options',
@@ -69,8 +65,24 @@
 			people.push person
 			res.json person
 
-		app.listen port, ->
-			console.log "open your browser to the url below"
-			console.log getUrl()
+	io.sockets.on 'connection', (socket) ->
+		socket.on 'search', (data) ->
+			socket.broadcast.emit 'searched', data
+
+		###
+		socket.on 'gitHubSearch', (data) ->
+			console.log 'gitHubSearch', data
+			socket.emit 'gitHubSearch',
+				lastGitHubSearch: data
+		###
+		#socket.on 'gitHubSearch', (data) ->
+		#	socket.emit 'lastSearch',
+		#		message: data
+
+	###
+	app.listen port, ->
+		console.log "open your browser to the url below"
+		console.log getUrl()
+	###
 
 )(require('express'), __dirname, process.argv.splice(2)[0])

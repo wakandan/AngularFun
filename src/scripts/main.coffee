@@ -4,13 +4,23 @@ requirejs
 	map:
 		'*':
 			'libs/angularResource': 'libs/angular-resource'
+			'libs/modal': 'libs/bootstrap-modal'
 	shim:
 		'libs/angular':
 			exports: 'angular'
+			deps: [
+				'libs/jquery'
+			]
 		'libs/angular-resource':
 			deps: [
 				'libs/angular'
 			]
+		'libs/modal':
+			deps: [
+				'libs/jquery'
+			]
+		'libs/jquery':
+			exports: '$'
 	[
 		'app'
 		'bootstrap'
@@ -19,6 +29,7 @@ requirejs
 		'controllers/personDetailsController'
 		'controllers/searchHistoryController'
 		'controllers/twitterController'
+		'directives/modal'
 		'directives/ngController'
 		'directives/tab'
 		'directives/tabs'

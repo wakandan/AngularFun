@@ -30,6 +30,23 @@
 				<h1>Playing with <a href="http://angularjs.org" target="_blank">AngularJS</a></h1>
 				<p>and also <a href="http://requirejs.org/" target="_blank">RequireJS</a></p>
 				<p>Dynamically loading templates.  Only getting JSON from the server.</p>
+
+				<section ng-init="modalShown=false">
+					<h3>Modal by Twitter Bootstrap</h3>
+					<div class="fade" app-modal ng-model="modalShown">
+						<div class="modal-header">
+							<h1>Modalin'!</h1>
+						</div>
+						<div class="modal-body">
+							<p>Cool beans, dude.</p>
+						</div>
+						<div class="modal-footer">
+							<a class="btn" ng-click="modalShown=false">Close Modal</a>
+						</div>
+					</div>
+					<a class="btn" ng-click="modalShown=true">Open Modal</a>
+				</section>
+
 			</div>
 			<div class="row">
 				<div class="span8">

@@ -4,7 +4,7 @@ require
 		'controllers/personController'       : deps: ['app', 'services/personService']
 		'controllers/personDetailsController': deps: ['app', 'services/personService']
 		'controllers/searchHistoryController': deps: ['app', 'services/messageService']
-		'controllers/twitterController'      : deps: ['app', 'services/twitterService', 'values/jquery']
+		'controllers/twitterController'      : deps: ['app', 'services/twitterService']
 		'directives/ngController'            : deps: ['app']
 		'directives/tab'                     : deps: ['app']
 		'directives/tabs'                    : deps: ['app', 'directives/tab']
@@ -15,11 +15,15 @@ require
 		'services/messageService'            : deps: ['app']
 		'services/personService'             : deps: ['app']
 		'services/twitterService'            : deps: ['app', 'services/messageService']
-		'values/jquery'                      : deps: ['app', 'libs/jquery']
+		'values/uaParser':
+			deps: ['app', 'libs/ua-parser']
+			init: (app, uaParser) ->
+				@UAParser = ->
+					uaParser.call @, arguments[0]
 		'app'                                : deps: ['libs/angular', 'libs/angular-resource']
 		'bootstrap'                          : deps: ['app']
 		'routes'                             : deps: ['app']
-		'run'                                : deps: ['app']
+		'run'                                : deps: ['app', 'values/uaParser']
 		'views'                              : deps: ['app']
 	[
 		'require'

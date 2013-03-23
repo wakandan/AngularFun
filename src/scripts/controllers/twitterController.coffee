@@ -1,8 +1,4 @@
-angular.module('app').controller 'twitterController', ['$log', '$scope', '$rootScope', '$location', 'twitterService', 'jquery', ($log, $scope, $rootScope, $location, twitterService, $) ->
-	jqueryVersion = $().jquery
-
-	$('h1').html "jQuery #{jqueryVersion} loaded!"
-
+angular.module('app').controller 'twitterController', ['$log', '$scope', '$rootScope', '$location', 'twitterService', ($log, $scope, $rootScope, $location, twitterService) ->
 	$scope.search = (searchTerm) ->
 		$location.path "/twitter/#{searchTerm}"
 

@@ -18,8 +18,7 @@ require
 		'values/uaParser':
 			deps: ['app', 'libs/ua-parser']
 			init: (app, uaParser) ->
-				@UAParser = ->
-					uaParser.call @, arguments[0]
+				@UAParser = uaParser
 		'app'                                : deps: ['libs/angular', 'libs/angular-resource']
 		'bootstrap'                          : deps: ['app']
 		'routes'                             : deps: ['app']

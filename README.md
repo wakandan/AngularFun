@@ -7,7 +7,7 @@ AngularFun is an [AngularJS](http://angularjs.org/) large application Reference 
 Simply follow the patterns and you'll get a complete development workflow, including:
 
 * file organization
-* transpilation of [CoffeeScript](http://coffeescript.org/) files
+* transpilation of [CoffeeScript](http://coffeescript.org/) files (_if you prefer plain JavaScript, see [JS Love](#js-love)_)
 * transpilation of [LESS](http://lesscss.org/) files
 * three build configurations
 	* **default** - compilation with no optimizations
@@ -36,6 +36,10 @@ You have three options.
 1. `grunt` - will compile the app preserving individual files (when run, files will be loaded on-demand)
 2. `grunt dev` - same as `grunt` but will watch for file changes and recompile on-the-fly
 3. `grunt prod` - will compile using optimizations.  This will create one JavaScript file and one CSS file to demonstrate the power of [r.js](http://requirejs.org/docs/optimization.html), the build optimization tool for RequireJS.  And take a look at the index.html file.  Yep - it's minified too.
+
+## JS Love
+Some of you prefer working with plain old JavaScript.  We've got ya covered.  Simply run the following grunt task.
+`grunt jslove` - will transpile all of the CoffeeScript files to JavaScript and throw out the Coffee.
 
 ## Run It
 1. Compile the app using one of the above three options.
@@ -202,6 +206,14 @@ Here are the final index.html script references.  Note that the condition will n
 
 ### Give and Take
 After many iterations it now feels right.  All [comments and questions](https://github.com/CaryLandholt/AngularFun/issues) and [Pull Requests](https://github.com/CaryLandholt/AngularFun/pulls) are always welcome.  I respond to all.
+
+### Contributing
+In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using grunt.
+
+#### List of contributors
+* [Cary Landholt](https://github.com/CaryLandholt)
+* [David Bochenski](https://github.com/Bochenski)
+* [Jan Philipp](https://github.com/knalli)
 
 ## To-Do
 * Add many more unit tests :(

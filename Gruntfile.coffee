@@ -1,3 +1,5 @@
+path = require 'path'
+
 # Build configurations.
 module.exports = (grunt) ->
 	grunt.initConfig
@@ -7,22 +9,32 @@ module.exports = (grunt) ->
 		# These directories should be deleted before subsequent builds.
 		# These directories are not committed to source control.
 		clean:
-			dist: './dist/'
-			temp: './temp/'
+			working:
+				src: [
+					'./dist/'
+					'./dist_test/'
+					'./.temp/'
+				]
+			# Used for those that desire plain old JavaScript.
+			jslove:
+				src: [
+					'**/*.coffee'
+					'!**/node_modules/**'
+				]
 
 		# Compile CoffeeScript (.coffee) files to JavaScript (.js).
 		coffee:
 			scripts:
 				files: [
-					cwd: './src/scripts/'
-					src: '**/*.coffee'
-					dest: './temp/scripts/'
+					cwd: './src/'
+					src: 'scripts/**/*.coffee'
+					dest: './.temp/'
 					expand: true
 					ext: '.js'
 				,
-					cwd: './test/scripts/'
-					src: '**/*.coffee'
-					dest: './test/scripts/'
+					cwd: './test/'
+					src: 'scripts/**/*.coffee'
+					dest: './dist_test/'
 					expand: true
 					ext: '.js'
 				]
@@ -30,37 +42,140 @@ module.exports = (grunt) ->
 					# Don't include a surrounding Immediately-Invoked Function Expression (IIFE) in the compiled output.
 					# For more information on IIFEs, please visit http://benalman.com/news/2010/11/immediately-invoked-function-expression/
 					bare: true
+			# Used for those that desire plain old JavaScript.
+			jslove:
+				files: [
+					cwd: './'
+					src: [
+						'**/*.coffee'
+						'!**/node_modules/**'
+					]
+					dest: './'
+					expand: true
+					ext: '.js'
+				]
+				options: '<%= coffee.scripts.options %>'
+
+		# Copies directories and files from one location to another.
+		copy:
+			# Copies the contents of the temp directory, except views, to the dist directory.
+			# In 'dev' individual files are used.
+			dev:
+				files: [
+					cwd: './.temp/'
+					src: '**'
+					dest: './dist/'
+					expand: true
+				]
+			# Copies img directory to temp.
+			img:
+				files: [
+					cwd: './src/'
+					src: 'img/**/*.png'
+					dest: './.temp/'
+					expand: true
+				]
+			# Copies js files to the temp directory
+			js:
+				files: [
+					cwd: './src/'
+					src: 'scripts/**/*.js'
+					dest: './.temp/'
+					expand: true
+				,
+					cwd: './src/'
+					src: 'scripts/**/*.js'
+					dest: './dist_test/'
+					expand: true
+				]
+			# Copies select files from the temp directory to the dist directory.
+			# In 'prod' minified files are used along with img and libs.
+			# The dist artifacts contain only the files necessary to run the application.
+			prod:
+				files: [
+					cwd: './.temp/'
+					src: [
+						'img/**/*.png'
+						'scripts/libs/html5shiv-printshiv.js'
+						'scripts/libs/json2.js'
+						'scripts/scripts.min.js'
+						'styles/styles.min.css'
+					]
+					dest: './dist/'
+					expand: true
+				,
+					'./dist/index.html': './.temp/index.min.html'
+				]
+			# Task is run when the watched index.template file is modified.
+			index:
+				files: [
+					cwd: './.temp/'
+					src: 'index.html'
+					dest: './dist/'
+					expand: true
+				]
+			# Task is run when a watched script is modified.
+			scripts:
+				files: [
+					cwd: './.temp/'
+					src: 'scripts/**'
+					dest: './dist/'
+					expand: true
+				]
+			# Task is run when a watched style is modified.
+			styles:
+				files: [
+					cwd: './.temp/'
+					src: 'styles/**'
+					dest: './dist/'
+					expand: true
+				]
+			# Task is run when a watched view is modified.
+			views:
+				files: [
+					cwd: './.temp/'
+					src: 'views/**'
+					dest: './dist/'
+					expand: true
+				]
+
+		# Start an Express server + live reload.
+		express:
+			livereload:
+				options:
+					port: 3005
+					bases: path.resolve './dist'
+					debug: true
+					monitor: {}
+					server: path.resolve './server'
+
+		# Compresses png files
+		imagemin:
+			img:
+				files: [
+					cwd: './src/'
+					src: 'img/**/*.png'
+					dest: './.temp/'
+					expand: true
+				]
+				options:
+					optimizationLevel: 7
 
 		# Compile LESS (.less) files to CSS (.css).
 		less:
 			styles:
 				files:
-					'./temp/styles/styles.css': './src/styles/styles.less'
+					'./.temp/styles/styles.css': './src/styles/styles.less'
 
-		# Compile template files (.template) to HTML (.html).
-		#
-		# .template files are essentially html; however, you can take advantage of features provided by grunt such as underscore templating.
-		#
-		# The example below demonstrates the use of the environment configuration setting.
-		# In 'prod' the concatenated and minified scripts are used along with a QueryString parameter of the hash of the file contents to address browser caching.
-		# In environments other than 'prod' the individual files are used and loaded with RequireJS.
-		#
-		# <% if (config.environment === 'prod') { %>
-		# 	<script src="/scripts/scripts.min.js?v=<%= config.hash('./temp/scripts/scripts.min.js') %>"></script>
-		# <% } else { %>
-		# 	<script data-main="/scripts/main.js" src="/scripts/libs/require.js"></script>
-		# <% } %>
-		template:
-			views:
-				files:
-					'./temp/views/': './src/views/**/*.template'
-			dev:
-				files:
-					'./temp/index.html': './src/index.template'
-				environment: 'dev'
+		# Minifiy index.html.
+		# Extra white space and comments will be removed.
+		# Content within <pre /> tags will be left unchanged.
+		# IE conditional comments will be left unchanged.
+		# As of this writing, the output is reduced by over 14%.
+		minifyHtml:
 			prod:
-				files: '<%= template.dev.files %>'
-				environment: 'prod'
+				files:
+					'./.temp/index.min.html': './.temp/index.html'
 
 		# Gathers all views and creates a file to push views directly into the $templateCache
 		# This will produce a file with the following content.
@@ -76,104 +191,22 @@ module.exports = (grunt) ->
 		# This file is then included in the output automatically.  AngularJS will use it instead of going to the file system for the views, saving requests.  Notice that the view content is actually minified.  :)
 		ngTemplateCache:
 			views:
-				files: [
-					src: './temp/views/**/*.html'
-					dest: './temp/scripts/views.js'
-				]
+				files:
+					'./.temp/scripts/views.js': './.temp/views/**/*.html'
 				options:
-					trim: './temp'
+					trim: './.temp'
 
-		# Compresses png files
-		imagemin:
-			img:
+		# Restart server when server sources have changed, notify all browsers on change.
+		regarde:
+			dist:
+				files: './dist/**'
+				tasks: 'livereload'
+			server:
 				files: [
-					cwd: './src/img/'
-					src: '**/*.png'
-					dest: './temp/img/'
-					expand: true
+					'server.coffee'
+					'routes.coffee'
 				]
-				options:
-					optimizationLevel: 7
-
-		# Copies directories and files from one location to another.
-		copy:
-			# Copies libs directory to temp.
-			temp:
-				files: [
-					cwd: './src/scripts/libs/'
-					src: '**'
-					dest: './temp/scripts/libs/'
-					expand: true
-				]
-			# Copies the contents of the temp directory, except views, to the dist directory.
-			# In 'dev' individual files are used.
-			dev:
-				files: [
-					cwd: './temp/'
-					src: ['**', '!**/views/**']
-					dest: './dist/'
-					expand: true
-				]
-			# Copies select files from the temp directory to the dist directory.
-			# In 'prod' minified files are used along with img and libs.
-			# The dist artifacts contain only the files necessary to run the application.
-			prod:
-				files: [
-					cwd: './temp/img/'
-					src: '**'
-					dest: './dist/img/'
-					expand: true
-				,
-					cwd: './temp/scripts/'
-					src: 'scripts.min.js'
-					dest: './dist/scripts/'
-					expand: true
-				,
-					cwd: './temp/scripts/libs/'
-					src: ['html5shiv-printshiv.js', 'json2.js']
-					dest: './dist/scripts/libs/'
-					expand: true
-				,
-					cwd: './temp/styles/'
-					src: 'styles.min.css'
-					dest: './dist/styles/'
-					expand: true
-				,
-					src: './temp/index.min.html'
-					dest: './dist/index.html'
-				]
-			# Task is run when a watched script is modified.
-			scripts:
-				files: [
-					cwd: './temp/scripts/'
-					src: '**'
-					dest: './dist/scripts/'
-					expand: true
-				]
-			# Task is run when a watched style is modified.
-			styles:
-				files: [
-					cwd: './temp/styles/'
-					src: '**'
-					dest: './dist/styles/'
-					expand: true
-				]
-			# Task is run when the watched index.template file is modified.
-			index:
-				files: [
-					cwd: './temp/'
-					src: 'index.html'
-					dest: './dist/'
-					expand: true
-				]
-			# Task is run when a watched view is modified.
-			views:
-				files: [
-					cwd: './temp/scripts/'
-					src: 'views.js'
-					dest: './dist/scripts/'
-					expand: true
-				]
+				tasks: 'express-restart:livereload'
 
 		# RequireJS optimizer configuration for both scripts and styles.
 		# This configuration is only used in the 'prod' build.
@@ -184,10 +217,10 @@ module.exports = (grunt) ->
 		requirejs:
 			scripts:
 				options:
-					baseUrl: './temp/scripts/'
+					baseUrl: './.temp/scripts/'
 					findNestedDependencies: true
 					logLevel: 0
-					mainConfigFile: './temp/scripts/main.js'
+					mainConfigFile: './.temp/scripts/main.js'
 					name: 'main'
 					# Exclude main from the final output to avoid the dependency on RequireJS at runtime.
 					onBuildWrite: (moduleName, path, contents) ->
@@ -198,7 +231,7 @@ module.exports = (grunt) ->
 
 						contents
 					optimize: 'uglify'
-					out: './temp/scripts/scripts.min.js'
+					out: './.temp/scripts/scripts.min.js'
 					preserveLicenseComments: false
 					skipModuleInsertion: true
 					uglify:
@@ -206,76 +239,36 @@ module.exports = (grunt) ->
 						no_mangle: false
 			styles:
 				options:
-					baseUrl: './temp/styles/'
-					cssIn: './temp/styles/styles.css'
+					baseUrl: './.temp/styles/'
+					cssIn: './.temp/styles/styles.css'
 					logLevel: 0
 					optimizeCss: 'standard'
-					out: './temp/styles/styles.min.css'
+					out: './.temp/styles/styles.min.css'
 
-		# Minifiy index.html.
-		# Extra white space and comments will be removed.
-		# Content within <pre /> tags will be left unchanged.
-		# IE conditional comments will be left unchanged.
-		# As of this writing, the output is reduced by over 14%.
-		minifyHtml:
-			prod:
-				files:
-					'./temp/index.min.html': './temp/index.html'
-
-		# Sets up file watchers and runs tasks when watched files are changed.
-		watch:
-			scripts:
-				files: './src/scripts/**/*.coffee'
-				tasks: [
-					'coffee'
-					'copy:scripts'
-					'clean:temp'
-					'reload'
-				]
-			styles:
-				files: './src/styles/**/*.less'
-				tasks: [
-					'less'
-					'copy:styles'
-					'clean:temp'
-					'reload'
-				]
-			index:
-				files: './src/index.template'
-				tasks: [
-					'template:dev'
-					'copy:index'
-					'clean:temp'
-					'reload'
-				]
+		# Compile template files (.template) to HTML (.html).
+		#
+		# .template files are essentially html; however, you can take advantage of features provided by grunt such as underscore templating.
+		#
+		# The example below demonstrates the use of the environment configuration setting.
+		# In 'prod' the concatenated and minified scripts are used along with a QueryString parameter of the hash of the file contents to address browser caching.
+		# In environments other than 'prod' the individual files are used and loaded with RequireJS.
+		#
+		# <% if (config.environment === 'prod') { %>
+		# 	<script src="/scripts/scripts.min.js?v=<%= config.hash('./.temp/scripts/scripts.min.js') %>"></script>
+		# <% } else { %>
+		# 	<script data-main="/scripts/main.js" src="/scripts/libs/require.js"></script>
+		# <% } %>
+		template:
 			views:
-				files: './src/views/**/*.template'
-				tasks: [
-					'template:views'
-					'ngTemplateCache'
-					'copy:views'
-					'clean:temp'
-					'reload'
-				]
-
-		# Leverages the LiveReload browser plugin to automatically reload the browser when watched files have changed.
-		#
-		# As of this writing, Chrome, Firefox, and Safari are supported.
-		#
-		# Get the plugin:
-		# here http://help.livereload.com/kb/general-use/browser-extensions
-		reload:
-			liveReload: true
-			port: 35729
-
-		# Runs a web server at the specified port.
-		# Can optionally watch for changes to the file referenced in the watch setting.
-		# The web server will automatically restart once the changes have been saved.
-		server:
-			app:
-				src: './server.coffee'
-				port: 3005
-				watch: './routes.coffee'
+				files:
+					'./.temp/views/': './src/views/**/*.template'
+			dev:
+				files:
+					'./.temp/index.html': './src/index.template'
+				environment: 'dev'
+			prod:
+				files: '<%= template.dev.files %>'
+				environment: 'prod'
 
 		# Runs unit tests using testacular
 		testacular:
@@ -291,6 +284,34 @@ module.exports = (grunt) ->
 					runnerPort: 9100
 					singleRun: true
 
+		# Sets up file watchers and runs tasks when watched files are changed.
+		watch:
+			index:
+				files: './src/index.template'
+				tasks: [
+					'template:dev'
+					'copy:index'
+				]
+			scripts:
+				files: './src/scripts/**'
+				tasks: [
+					'coffee:scripts'
+					'copy:js'
+					'copy:scripts'
+				]
+			styles:
+				files: './src/styles/**/*.less'
+				tasks: [
+					'less'
+					'copy:styles'
+				]
+			views:
+				files: './src/views/**/*.template'
+				tasks: [
+					'template:views'
+					'copy:views'
+				]
+
 	# Register grunt tasks supplied by grunt-contrib-*.
 	# Referenced in package.json.
 	# https://github.com/gruntjs/grunt-contrib
@@ -299,66 +320,25 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-contrib-copy'
 	grunt.loadNpmTasks 'grunt-contrib-imagemin'
 	grunt.loadNpmTasks 'grunt-contrib-less'
+	grunt.loadNpmTasks 'grunt-contrib-livereload'
 	grunt.loadNpmTasks 'grunt-contrib-requirejs'
 	grunt.loadNpmTasks 'grunt-contrib-watch'
+
+	# Express server + LiveReload
+	grunt.loadNpmTasks 'grunt-express'
 
 	# Register grunt tasks supplied by grunt-hustler.
 	# Referenced in package.json.
 	# https://github.com/CaryLandholt/grunt-hustler
 	grunt.loadNpmTasks 'grunt-hustler'
 
-	# Register grunt tasks supplied by grunt-reload.
-	# Referenced in package.json.
-	# https://github.com/webxl/grunt-reload
-	grunt.loadNpmTasks 'grunt-reload'
+	# Recommended watcher for LiveReload + Express.
+	grunt.loadNpmTasks 'grunt-regarde'
 
 	# Register grunt tasks supplied by grunt-testacular.
 	# Referenced in package.json.
 	# https://github.com/Dignifiedquire/grunt-testacular
 	grunt.loadNpmTasks 'grunt-testacular'
-
-	# Compiles the app with non-optimized build settings and places the build artifacts in the dist directory.
-	# Enter the following command at the command line to execute this build task:
-	# grunt
-	grunt.registerTask 'default', [
-		'clean'
-		'coffee'
-		'less'
-		'template:views'
-		'ngTemplateCache'
-		'imagemin'
-		'copy:temp'
-		'template:dev'
-		'copy:dev'
-		'clean:temp'
-	]
-
-	# Compiles the app with non-optimized build settings, places the build artifacts in the dist directory, and watches for file changes.
-	# Enter the following command at the command line to execute this build task:
-	# grunt dev
-	grunt.registerTask 'dev', [
-		'default'
-		'reload'
-		'watch'
-	]
-
-	# Compiles the app with optimized build settings and places the build artifacts in the dist directory.
-	# Enter the following command at the command line to execute this build task:
-	# grunt prod
-	grunt.registerTask 'prod', [
-		'clean'
-		'coffee'
-		'less'
-		'template:views'
-		'ngTemplateCache'
-		'imagemin'
-		'copy:temp'
-		'requirejs'
-		'template:prod'
-		'minifyHtml'
-		'copy:prod'
-		'clean:temp'
-	]
 
 	# Compiles the app with non-optimized build settings, places the build artifacts in the dist directory, and runs unit tests.
 	# Enter the following command at the command line to execute this build task:
@@ -366,4 +346,61 @@ module.exports = (grunt) ->
 	grunt.registerTask 'test', [
 		'default'
 		'testacular'
+	]
+
+	# Starts a web server
+	# Enter the following command at the command line to execute this task:
+	# grunt server
+	grunt.registerTask 'server', [
+		'livereload-start'
+		'express'
+		'regarde'
+	]
+
+	# Compiles all CoffeeScript files in the project to JavaScript then deletes all CoffeeScript files.
+	# Used for those that desire plain old JavaScript.
+	# Enter the following command at the command line to execute this build task:
+	# grunt jslove
+	grunt.registerTask 'jslove', [
+		'coffee:jslove'
+		'clean:jslove'
+	]
+
+	# Compiles the app with non-optimized build settings and places the build artifacts in the dist directory.
+	# Enter the following command at the command line to execute this build task:
+	# grunt
+	grunt.registerTask 'default', [
+		'clean:working'
+		'coffee:scripts'
+		'copy:js'
+		'less'
+		'template:views'
+		'copy:img'
+		'template:dev'
+		'copy:dev'
+	]
+
+	# Compiles the app with non-optimized build settings, places the build artifacts in the dist directory, and watches for file changes.
+	# Enter the following command at the command line to execute this build task:
+	# grunt dev
+	grunt.registerTask 'dev', [
+		'default'
+		'watch'
+	]
+
+	# Compiles the app with optimized build settings and places the build artifacts in the dist directory.
+	# Enter the following command at the command line to execute this build task:
+	# grunt prod
+	grunt.registerTask 'prod', [
+		'clean:working'
+		'coffee:scripts'
+		'copy:js'
+		'less'
+		'template:views'
+		'imagemin'
+		'ngTemplateCache'
+		'requirejs'
+		'template:prod'
+		'minifyHtml'
+		'copy:prod'
 	]

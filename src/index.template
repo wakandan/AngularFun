@@ -34,7 +34,20 @@
 				} else {
 					win.top.location = win.self.location;
 				}
+
 			}(window));
+
+            var require = {
+                paths: {
+                    'angular': 'bower_components/angular/angular',
+                    'angular-ui': 'bower_components/angular-ui/angular-ui',
+                    'angular-resource': 'bower_components/angular-resource/angular-resource',
+                    'angular-strap': 'bower_components/angular-strap/dist/angular-strap',
+                    'jquery': 'bower_components/jquery/jquery'
+                },
+                waitSeconds: 15
+            }
+
 		</script>
 		<!-- ClickJacking Defense end -->
 	</head>

@@ -24,8 +24,8 @@ require({
     'filters/twitterfy': {
       deps: ['app']
     },
-    'libs/angular-resource': {
-      deps: ['libs/angular']
+    'angular-resource': {
+      deps: ['angular']
     },
     'responseInterceptors/dispatcher': {
       deps: ['app']
@@ -40,7 +40,7 @@ require({
       deps: ['app']
     },
     'app': {
-      deps: ['libs/angular', 'libs/angular-resource']
+      deps: ['angular', 'angular-resource']
     },
     'bootstrap': {
       deps: ['app']
@@ -53,9 +53,23 @@ require({
     },
     'views': {
       deps: ['app']
-    }
+    }, 
+    'angular-strap': ['angular']
   }
-}, ['require', 'controllers/gitHubController', 'controllers/personController', 'controllers/personDetailsController', 'controllers/searchHistoryController', 'directives/ngController', 'directives/tabs', 'filters/twitterfy', 'responseInterceptors/dispatcher', 'routes', 'run', 'views'], function(require) {
+}, ['require',
+    'controllers/gitHubController',
+    'controllers/personController',
+    'controllers/personDetailsController',
+    'controllers/searchHistoryController',
+    'directives/ngController',
+    'directives/tabs',
+    'filters/twitterfy',
+    'responseInterceptors/dispatcher',
+    'routes',
+    'run',
+    'jquery',
+    'angular-strap',
+    'views'], function(require) {
   return angular.element(document).ready(function() {
     return require(['bootstrap']);
   });

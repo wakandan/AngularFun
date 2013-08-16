@@ -1,0 +1,17 @@
+{
+  "name": "AngularFun",
+  "version": "0.0.0",
+  "dependencies": {
+      "angular": "latest",
+      "angular-ui": "latest",
+      "angular-resource": "latest",
+      "angular-strap": "latest"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
